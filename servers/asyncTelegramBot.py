@@ -71,6 +71,7 @@ def callGPT(prompt):
     return content, sourcesList
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(update.effective_chat.id)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
     
 async def prompt(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -101,7 +102,7 @@ async def prompt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if response.status_code == 200:
                 result = response.json()
                 if result.get("gptResult") is not None:
-                    await send_results_to_user(context, update.effective_chat.id, argument, result.get("gptResult"), result.get("gptSource"), startTime)
+                    await send_results_to_user(context, update.effective_chat.id, argument, result.get("gptResult"), result.get("gptSource"), startTime)   
                     break
             await asyncio.sleep(1)  # Wait for 1 second before checking again
     else:
@@ -126,6 +127,22 @@ async def send_results_to_user(context, chat_id, argument, gptResult, gptSource,
 
     responseMessage = formattedResponse + "\n" + formattedSource + "\n" + stopTime + "\n" + timeTaken
 
+    data = {
+        "prompt": argument,
+        "response": gptResult,
+        "sourceA": gptSource[0],
+        "sourceB": gptSource[1],
+        "chatID": chat_id
+    }
+
+    dbInsertUrl = "http://192.168.92.152:8002/insert_chat"
+    response = requests.post(dbInsertUrl, json=data)
+
+    if response.status_code == 200:
+        print("Data inserted successfully")
+    else:
+        print("Failed to insert data")
+    
     await context.bot.send_message(chat_id=chat_id, text=responseMessage, parse_mode='Markdown')
 
 if __name__ == '__main__':
