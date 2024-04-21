@@ -135,7 +135,7 @@ async def send_results_to_user(context, chat_id, argument, gptResult, gptSource,
         "chatID": chat_id
     }
 
-    dbInsertUrl = "http://192.168.92.152:8002/insert_chat"
+    dbInsertUrl = "http://localhost:8002/insert_chat"
     response = requests.post(dbInsertUrl, json=data)
 
     if response.status_code == 200:
