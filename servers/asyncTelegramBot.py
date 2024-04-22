@@ -7,6 +7,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 
 tokenKey = "REPLACE"
+queueURL = "http://localhost:8000"
+dbURL = "http://localhost:8002"
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -28,7 +30,7 @@ async def prompt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=notificationMessage, parse_mode='Markdown')
     
     # Make an API call to the queue system
-    url = "http://localhost:8000/add_to_queue/"
+    url = queueURL + "/add_to_queue/"
     headers = {"Content-Type": "application/json"}
     data = {"prompt": argument}
     response = requests.post(url, headers=headers, json=data)
@@ -40,7 +42,7 @@ async def prompt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Start a loop to check for results periodically
         while True:
             # Make an API call to the queue system to get the results
-            url = f"http://localhost:8000/get_result/{request_id}"
+            url = queueURL + f"/get_result/{request_id}"
             response = requests.get(url)
             if response.status_code == 200:
                 result = response.json()
@@ -78,7 +80,7 @@ async def send_results_to_user(context, chat_id, argument, gptResult, gptSource,
         "chatID": chat_id
     }
 
-    dbInsertUrl = "http://localhost:8002/insert_chat"
+    dbInsertUrl = dbURL + "/insert_chat"
     response = requests.post(dbInsertUrl, json=data)
 
     if response.status_code == 200:
