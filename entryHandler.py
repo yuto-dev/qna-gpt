@@ -1,16 +1,21 @@
-from fastapi import FastAPI, BackgroundTasks
-from queue import Queue
+import sqlite3
+import time
 import requests
 import json
+from datetime import datetime
 
-app = FastAPI()
-request_queue = Queue()
-results_dict = {} # Shared data structure to store results
+dbURL = "http://localhost:8003"
+# Connect to the SQLite database
+conn = sqlite3.connect('chat.db')
+cursor = conn.cursor()
+
+# Initialize an empty list to store the IDs
+ids_list = []
 
 def callGPT(prompt):
     print("Start callGPT")
     # Define the URL
-    url = "http://localhost:8001/v1/completions"
+    url = "http://192.168.1.65:8001/v1/completions"
     # Define the headers
     headers = {
         "Content-Type": "application/json"
@@ -69,43 +74,52 @@ def callGPT(prompt):
 
     return content, sourcesList
 
-def process_queue():
-    while not request_queue.empty():
-        request_data = request_queue.get()
-        input_data = request_data.get("prompt")
-        
-        try:
-            gptResult, gptSource = callGPT(input_data)
-            request_data['gptResult'] = gptResult
-            request_data['gptSource'] = gptSource
-            # Store the results in a dictionary with a unique identifier
-            results_dict[id(request_data)] = {"gptResult": gptResult, "gptSource": gptSource}
-        except Exception as e:
-            print(f"Error processing request: {e}")
-        finally:
-            request_queue.task_done()
-
-@app.post("/add_to_queue/")
-async def add_to_queue(background_tasks: BackgroundTasks, request_data: dict):
-    # Add the request to the queue
-    request_queue.put(request_data)
-    # Schedule the background task to process the request
-    background_tasks.add_task(process_queue)
+while True:
+    # Query the database for entries where flagA is 0
+    cursor.execute("SELECT id FROM chatHistory WHERE flagA = 0")
+    entries = cursor.fetchall()
     
-    # Return the response with a unique identifier for the request
-    request_id = id(request_data)
-    return {"message": "Request added to queue", "request_id": request_id}
-
-@app.get("/get_result/{request_id}")
-async def get_result(request_id: int):
-    # Retrieve the processed results for the given request ID
-    result = results_dict.get(request_id)
-    if result:
-        return result
+    # Clear the current list of IDs
+    #ids_list.clear()
+    if entries:
+        # Add the IDs from the query entries to the list
+        for row in entries:
+            # Make an API call to the queue system
+            id = row[0]
+            url = dbURL + "/get_prompt"
+            headers = {"Content-Type": "application/json"}
+            data = {"id": id}
+            print(id)
+            print(type(id))
+            response = requests.get(url, headers=headers, json=data)
+            response_data = response.json()
+            promptInput = response_data.get("prompt")
+            print(promptInput)
+            print(type(promptInput))
+            gptResult, gptSource = callGPT(promptInput)
+            print(gptResult)
+            print(gptSource)
+            
+            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            
+            updateData = {
+                    "id": id,
+                    "response": gptResult,
+                    "sourceA": gptSource[0],
+                    "sourceB": gptSource[1],
+                    "flagA": 1,
+                    "endTime": current_time
+            }
+            
+            response = requests.post(dbURL + "/update_entry", json=updateData)
+            response_data = response.json()
+            print(response_data)
+    
+    # Print the list of IDs for demonstration purposes
+    if entries:
+        print("Current IDs with flagA = False:", entries)
     else:
-        return {"message": "Results not available yet"}
-
-if __name__ == "__main__":
-    # Run the FastAPI server
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+        print("No ID with flagA = 0")
+    
+    # Sleep for a while before the next query to avoid overloading the database
+    time.sleep(5) # Adjust the sleep duration as needed

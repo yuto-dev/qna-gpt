@@ -3,12 +3,16 @@ import sqlite3
 try:
     sqliteConnection = sqlite3.connect('chat.db')
     sqlite_create_table_query = '''CREATE TABLE chatHistory (
-                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                                 prompt TEXT NOT NULL,
-                                response TEXT NOT NULL,
-                                sourceA TEXT NOT NULL,
-                                sourceB TEXT NOT NULL,
-                                chatID INTEGER NOT NULL);'''
+                                response TEXT,
+                                sourceA TEXT,
+                                sourceB TEXT,
+                                flagA INTEGER DEFAULT 0,
+                                flagB INTEGER DEFAULT 0,
+                                chatID INTEGER NOT NULL,
+                                startTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                endTime TIMESTAMP);'''
 
     cursor = sqliteConnection.cursor()
     print("Successfully Connected to SQLite")
@@ -24,4 +28,3 @@ finally:
     if sqliteConnection:
         sqliteConnection.close()
         print("sqlite connection is closed")
-
