@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 
 dbURL = "http://localhost:8003"
+gptURL = "http://192.168.1.53:8001"
 # Connect to the SQLite database
 conn = sqlite3.connect('chat.db')
 cursor = conn.cursor()
@@ -15,7 +16,7 @@ ids_list = []
 def callGPT(prompt):
     print("Start callGPT")
     # Define the URL
-    url = "http://localhost:8001/v1/completions"
+    url = gptURL + "/v1/completions"
     # Define the headers
     headers = {
         "Content-Type": "application/json"
@@ -105,10 +106,9 @@ while True:
             updateData = {
                     "id": id,
                     "response": gptResult,
-                    "sourceA": gptSource[0],
-                    "sourceB": gptSource[1],
+                    "source1": gptSource[0],
+                    "source2": gptSource[1],
                     "flagA": 1,
-                    "endTime": current_time
             }
             
             response = requests.post(dbURL + "/update_entry", json=updateData)

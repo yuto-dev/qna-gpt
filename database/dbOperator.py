@@ -67,7 +67,7 @@ async def get_result(prompt_query: IdQuery):
 
     if prompt_result:
         # If a result is found, return the content of the "prompt" column
-        return {"response": prompt_result[2], "sourceA": prompt_result[3], "sourceB": prompt_result[4]}
+        return {"response": prompt_result[2], "source1": prompt_result[3], "source2": prompt_result[4]}
     else:
         # If no result is found, return a message indicating that
         return {"error": "No entry found with the provided ID."}
@@ -75,17 +75,16 @@ async def get_result(prompt_query: IdQuery):
 class UpdateData(BaseModel):
     id: int
     response: str
-    sourceA: str
-    sourceB: str
+    source1: str
+    source2: str
     flagA: int
-    endTime: str  # Assuming endTime is received as a string
 
 @app.post("/update_entry")
 async def update_entry(data: UpdateData):
 
     # Update the entry in the database
-    c.execute("UPDATE chatHistory SET response = ?, sourceA = ?, sourceB = ?, flagA = ?, endTime = ? WHERE id = ?", 
-              (data.response, data.sourceA, data.sourceB, data.flagA, data.endTime, data.id))
+    c.execute("UPDATE chatHistory SET response = ?, source1 = ?, source2 = ?, flagA = ? WHERE id = ?", 
+              (data.response, data.source1, data.source2, data.flagA, data.id))
     conn.commit()
 
     return {"message": "Chat data updated successfully!"}
@@ -93,13 +92,14 @@ async def update_entry(data: UpdateData):
 class flagBData(BaseModel):
     id: int
     flagB: int
+    duration: str
 
 @app.post("/update_flagb")
 async def update_entry(data: flagBData):
 
     # Update the entry in the database
-    c.execute("UPDATE chatHistory SET flagB = ? WHERE id = ?", 
-              (data.flagB, data.id))
+    c.execute("UPDATE chatHistory SET flagB = ?, duration = ? WHERE id = ?", 
+              (data.flagB, data.duration, data.id))
     conn.commit()
 
     return {"message": "Chat data updated successfully!"}

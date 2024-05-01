@@ -6,13 +6,13 @@ try:
                                  id INTEGER PRIMARY KEY AUTOINCREMENT,
                                 prompt TEXT NOT NULL,
                                 response TEXT,
-                                sourceA TEXT,
-                                sourceB TEXT,
+                                source1 TEXT,
+                                source2 TEXT,
                                 flagA INTEGER DEFAULT 0,
                                 flagB INTEGER DEFAULT 0,
                                 chatID INTEGER NOT NULL,
                                 startTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                endTime TIMESTAMP);'''
+                                duration TIMESTAMP);'''
 
     cursor = sqliteConnection.cursor()
     print("Successfully Connected to SQLite")
