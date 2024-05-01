@@ -81,9 +81,9 @@ if lastLocalId > min_id:
         "flagB": entry[6],
         "chatID": entry[7],
         "startTime": entry[8],
-        "endTime": entry[9]  # Add endTime to the data dictionary with the current time
+        "duration": entry[9]  # Add endTime to the data dictionary with the current time
         }
-
+        
         print(data)
         print("\n")
         print("-----------------------------------------------------------")
