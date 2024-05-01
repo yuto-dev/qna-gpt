@@ -6,7 +6,7 @@ import base64
 dbURL = "http://localhost:8003"
 
 user = 'REPLACE'
-password = ' WP APPLICATION PASSWORD'
+password = 'WPAPPLICATIONPASSWORD'
 
 def get_chat_entries_above_id(db_file, min_id):
     # Connect to the SQLite database
@@ -53,7 +53,8 @@ def getLocalLastRowId():
 
 # Specify the minimum ID
 min_id = int(get_last_insert_id()) # Change this to your desired minimum ID
-#min_id = min_id.get("id")
+#min_id = 0
+
 lastLocalId = getLocalLastRowId()
 lastLocalId = int(lastLocalId.get("id"))
 print(lastLocalId)

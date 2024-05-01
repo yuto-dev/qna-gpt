@@ -15,7 +15,7 @@ ids_list = []
 def callGPT(prompt):
     print("Start callGPT")
     # Define the URL
-    url = "http://192.168.1.65:8001/v1/completions"
+    url = "http://localhost:8001/v1/completions"
     # Define the headers
     headers = {
         "Content-Type": "application/json"

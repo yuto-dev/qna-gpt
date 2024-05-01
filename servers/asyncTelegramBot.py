@@ -1,6 +1,7 @@
 import logging
 import requests
 import asyncio
+import json
 from datetime import datetime as rolex
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
@@ -21,7 +22,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    message = "Halo, saya KayuMerantiBot. Untuk memulai, silahkan ketik /prompt lalu lanjutkan dengan pertanyaan yang ada ingin anda tanyakan. \n" + "\nContoh: /prompt Apakah yang membuat langit berwarna biru?"
+    message = "Halo, saya KayuMerantiBot. Untuk memulai, silahkan ketik /prompt lalu lanjutkan dengan pertanyaan yang ada ingin anda tanyakan. \n" + "\nContoh: /prompt Apa yang membuat langit berwarna biru?"
     await context.bot.send_message(chat_id=update.effective_chat.id, text=message, parse_mode='Markdown')
 
 async def prompt(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -79,11 +80,11 @@ async def prompt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         sourceList.append(sourceB)
         
         updateData = {
-                    "id": id,
+                    "id": responseId,
                     "flagB": 1
-            }
+        }
             
-        response = requests.post(dbURL + "/update_flagb", json=updateData)
+        requests.post(dbURL + "/update_flagb", json=updateData)
         
         await send_results_to_user(context, update.effective_chat.id, prompt, response, sourceList, startTime)
         
@@ -126,7 +127,8 @@ async def redacted(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Error processing the request")
 
 async def send_results_to_user(context, chat_id, argument, gptResult, gptSource, startTime):
-    
+    print(type(argument))
+    print(type(gptResult))
     formattedResponse = "*Replying to:*\n" + argument + "\n" + "*Response:*\n" + gptResult + "\n"
     formattedSource = "*Source:*\n" + gptSource[0] + "\n" + gptSource[1] + "\n"
     endTime = rolex.now()
